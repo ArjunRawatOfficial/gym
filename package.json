@@ -1,0 +1,11 @@
+{
+  "name": "forgefit",
+  "version": "1.0.0",
+  "description": "ForgeFit — Premium Fitness Tracker Web Application",
+  "scripts": {
+    "start": "npx -y serve . -l 3000 --no-clipboard",
+    "dev": "npx -y serve . -l 3000 --no-clipboard"
+  },
+  "keywords": ["fitness", "gym", "workout", "tracker"],
+  "license": "MIT"
+}

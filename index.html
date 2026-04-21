@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ForgeFit — Your ultimate fitness companion. Track workouts, calculate BMI, plan meals, and crush your fitness goals with our premium gym dashboard.">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>ForgeFit — Login | Premium Fitness Tracker</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Favicon (inline SVG data URI) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <main class="auth-page" id="authPage">
+
+    <!-- ═══ Left Hero Section ═══ -->
+    <section class="auth-hero" aria-hidden="true">
+      <!-- Floating decorative shapes -->
+      <div class="auth-shape auth-shape-1"></div>
+      <div class="auth-shape auth-shape-2"></div>
+      <div class="auth-shape auth-shape-3"></div>
+      <div class="auth-shape auth-shape-4"></div>
+
+      <div class="auth-hero-content">
+        <div class="auth-hero-icon">🏋️</div>
+        <h1>FORGE<span>FIT</span></h1>
+        <p>Transform your body. Track your progress. Dominate every workout. Your premium fitness dashboard awaits.</p>
+
+        <div class="auth-features">
+          <div class="auth-feature animate-fade-up stagger-2">
+            <div class="auth-feature-icon">📊</div>
+            <div class="auth-feature-text">Track Progress</div>
+          </div>
+          <div class="auth-feature animate-fade-up stagger-3">
+            <div class="auth-feature-icon">💪</div>
+            <div class="auth-feature-text">Custom Plans</div>
+          </div>
+          <div class="auth-feature animate-fade-up stagger-4">
+            <div class="auth-feature-icon">🥗</div>
+            <div class="auth-feature-text">Diet Coach</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Right Form Section ═══ -->
+    <section class="auth-form-side">
+      <div class="auth-form-container">
+
+        <!-- Mobile-only brand -->
+        <div class="auth-form-header" id="authFormHeader">
+          <h2 id="authTitle">Welcome Back</h2>
+          <p id="authSubtitle">Sign in to continue your fitness journey</p>
+        </div>
+
+        <!-- ── LOGIN FORM ── -->
+        <form class="auth-form" id="loginForm" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">Email Address</label>
+            <input class="form-input" type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Password</label>
+            <div class="password-input-wrapper">
+              <input class="form-input" type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password">
+              <button type="button" class="password-toggle" id="loginPassToggle" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg" type="submit" id="loginBtn" style="width:100%; margin-top: var(--space-2);">
+            <span id="loginBtnText">Sign In</span>
+            <div class="spinner hidden" id="loginSpinner"></div>
+          </button>
+
+          <div class="auth-toggle">
+            Don't have an account? <a id="showSignup">Create one</a>
+          </div>
+        </form>
+
+        <!-- ── SIGNUP FORM ── -->
+        <form class="auth-form hidden" id="signupForm" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="signupName">Full Name</label>
+            <input class="form-input" type="text" id="signupName" placeholder="Arjun Sharma" required autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signupEmail">Email Address</label>
+            <input class="form-input" type="email" id="signupEmail" placeholder="you@example.com" required autocomplete="email">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="signupPassword">Password</label>
+              <div class="password-input-wrapper">
+                <input class="form-input" type="password" id="signupPassword" placeholder="Min 6 chars" required autocomplete="new-password" minlength="6">
+                <button type="button" class="password-toggle" id="signupPassToggle" aria-label="Toggle password visibility">👁️</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signupConfirm">Confirm</label>
+              <input class="form-input" type="password" id="signupConfirm" placeholder="Re-enter" required autocomplete="new-password">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signupGoal">Fitness Goal</label>
+            <select class="form-select" id="signupGoal" required>
+              <option value="" disabled selected>Select your goal</option>
+              <option value="bulking">🏋️ Bulking — Build Muscle</option>
+              <option value="cutting">🔥 Cutting — Lose Fat</option>
+              <option value="maintenance">⚖️ Maintenance — Stay Fit</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary btn-lg" type="submit" id="signupBtn" style="width:100%; margin-top: var(--space-2);">
+            <span id="signupBtnText">Create Account</span>
+            <div class="spinner hidden" id="signupSpinner"></div>
+          </button>
+
+          <div class="auth-toggle">
+            Already have an account? <a id="showLogin">Sign in</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- App Scripts (no server required) -->
+  <script src="js/config.js"></script>
+  <script src="js/auth-page.js"></script>
+
+</body>
+</html>

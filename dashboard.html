@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ForgeFit Dashboard — Track workouts, calculate BMI, manage diet plans, and monitor your fitness progress.">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>ForgeFit — Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <div class="dashboard-layout" id="dashboardLayout">
+
+    <!-- ═══════════════════════════════
+         SIDEBAR NAVIGATION
+         ═══════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">F</div>
+          <div class="sidebar-logo-text">FORGE<span>FIT</span></div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-title">Main</div>
+
+        <button class="nav-item active" data-section="overview" id="navOverview">
+          <span class="nav-item-icon">🏠</span>
+          <span class="nav-item-text">Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-section="calculator" id="navCalculator">
+          <span class="nav-item-icon">🧮</span>
+          <span class="nav-item-text">BMI & Protein</span>
+        </button>
+
+        <button class="nav-item" data-section="workout" id="navWorkout">
+          <span class="nav-item-icon">📅</span>
+          <span class="nav-item-text">Workout Plan</span>
+        </button>
+
+        <button class="nav-item" data-section="diet" id="navDiet">
+          <span class="nav-item-icon">🥗</span>
+          <span class="nav-item-text">Diet Plan</span>
+        </button>
+
+        <div class="sidebar-section-title">Library</div>
+
+        <button class="nav-item" data-section="exercises" id="navExercises">
+          <span class="nav-item-icon">💪</span>
+          <span class="nav-item-text">Exercise Library</span>
+          <span class="nav-item-badge">50+</span>
+        </button>
+
+        <div class="sidebar-section-title">Analytics</div>
+
+        <button class="nav-item" data-section="progress" id="navProgress">
+          <span class="nav-item-icon">📊</span>
+          <span class="nav-item-text">Progress Tracker</span>
+        </button>
+
+        <button class="nav-item" data-section="profile" id="navProfile">
+          <span class="nav-item-icon">⚙️</span>
+          <span class="nav-item-text">Profile</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user" id="sidebarUser">
+          <div class="avatar" id="userAvatar">A</div>
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name" id="sidebarUserName">Loading...</div>
+            <div class="sidebar-user-email" id="sidebarUserEmail">...</div>
+          </div>
+        </div>
+        <button class="nav-item" id="logoutBtn" style="margin-top: var(--space-2); color: var(--color-error);">
+          <span class="nav-item-icon">🚪</span>
+          <span class="nav-item-text">Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ═══════════════════════════════
+         MAIN CONTENT
+         ═══════════════════════════════ -->
+    <main class="main-content">
+
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="top-header-left">
+          <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">☰</button>
+          <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="top-header-right">
+          <span class="text-secondary" id="currentDate" style="font-size: var(--text-sm);"></span>
+        </div>
+      </header>
+
+      <div class="content-area">
+
+        <!-- ══════════════════════════
+             SECTION: OVERVIEW
+             ══════════════════════════ -->
+        <section class="section-panel active" id="sectionOverview">
+
+          <!-- Quick Stats -->
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card animate-fade-up stagger-1">
+              <div class="stat-icon" style="background: rgba(204, 255, 0, 0.15);">🏋️</div>
+              <div class="stat-value" id="statWorkouts">0</div>
+              <div class="stat-label">Workouts This Week</div>
+            </div>
+            <div class="stat-card animate-fade-up stagger-2">
+              <div class="stat-icon" style="background: rgba(64, 196, 255, 0.15);">💧</div>
+              <div class="stat-value" id="statWater">0/8</div>
+              <div class="stat-label">Water Glasses</div>
+            </div>
+            <div class="stat-card animate-fade-up stagger-3">
+              <div class="stat-icon" style="background: rgba(0, 230, 118, 0.15);">📏</div>
+              <div class="stat-value" id="statBMI">--</div>
+              <div class="stat-label">Current BMI</div>
+            </div>
+            <div class="stat-card animate-fade-up stagger-4">
+              <div class="stat-icon" style="background: rgba(255, 82, 82, 0.15);">🔥</div>
+              <div class="stat-value" id="statStreak">0</div>
+              <div class="stat-label">Day Streak</div>
+            </div>
+          </div>
+
+          <!-- Dashboard Grid -->
+          <div class="dashboard-grid">
+            <!-- Today's Workout Preview -->
+            <div class="card animate-fade-up stagger-3">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Today's Workout</div>
+                  <div class="card-subtitle" id="todayDayName">Loading...</div>
+                </div>
+                <span class="badge badge-neon" id="todayFocus">--</span>
+              </div>
+              <div id="todayExerciseList">
+                <!-- Dynamically populated -->
+              </div>
+              <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-4);" data-section="workout" onclick="document.querySelector('[data-section=workout]').click()">
+                View Full Plan →
+              </button>
+            </div>
+
+            <!-- Mini Chart -->
+            <div class="card animate-fade-up stagger-4">
+              <div class="card-header">
+                <div class="card-title">Weight Trend</div>
+              </div>
+              <canvas id="miniWeightChart" height="200"></canvas>
+              <button class="btn btn-secondary btn-sm" style="margin-top: var(--space-4);" onclick="document.querySelector('[data-section=progress]').click()">
+                View Details →
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="dashboard-grid-equal">
+            <div class="card-neon animate-fade-up stagger-5" style="cursor: pointer;" onclick="document.querySelector('[data-section=calculator]').click()">
+              <div style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">🧮</div>
+              <div class="card-title">BMI & Protein Calculator</div>
+              <div class="card-subtitle">Calculate your body metrics and daily protein needs</div>
+            </div>
+            <div class="card-neon animate-fade-up stagger-6" style="cursor: pointer;" onclick="document.querySelector('[data-section=exercises]').click()">
+              <div style="font-size: var(--text-3xl); margin-bottom: var(--space-3);">💪</div>
+              <div class="card-title">Exercise Library</div>
+              <div class="card-subtitle">Browse 50+ exercises with proper form guides</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════
+             SECTION: BMI & PROTEIN
+             ══════════════════════════ -->
+        <section class="section-panel" id="sectionCalculator">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">BMI & Protein Calculator</h2>
+              <p class="section-description">Enter your details to calculate your Body Mass Index, daily protein requirements, and Total Daily Energy Expenditure.</p>
+            </div>
+          </div>
+
+          <div class="calculator-layout">
+            <!-- Calculator Form -->
+            <div class="calculator-form-section">
+              <div class="card">
+                <form id="calculatorForm" novalidate>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="calcWeight">Weight (kg)</label>
+                      <input class="form-input" type="number" id="calcWeight" placeholder="70" min="20" max="300" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="calcHeight">Height (cm)</label>
+                      <input class="form-input" type="number" id="calcHeight" placeholder="175" min="100" max="250" step="0.1" required>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="calcAge">Age</label>
+                      <input class="form-input" type="number" id="calcAge" placeholder="25" min="10" max="120" required>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="calcGender">Gender</label>
+                      <select class="form-select" id="calcGender" required>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="calcActivity">Activity Level</label>
+                    <select class="form-select" id="calcActivity" required>
+                      <option value="sedentary">Sedentary (Office job, little exercise)</option>
+                      <option value="light">Lightly Active (1-3 days/week)</option>
+                      <option value="moderate" selected>Moderately Active (3-5 days/week)</option>
+                      <option value="active">Very Active (6-7 days/week)</option>
+                      <option value="athlete">Athlete (2x/day training)</option>
+                    </select>
+                  </div>
+
+                  <button class="btn btn-primary btn-lg" type="submit" style="width: 100%;">
+                    Calculate Results
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="calculator-result-section" id="calculatorResults" style="display: none;">
+              <!-- BMI Gauge -->
+              <div class="card" style="text-align: center;">
+                <h4 style="margin-bottom: var(--space-4);">Your BMI</h4>
+                <div class="bmi-gauge">
+                  <svg width="200" height="200" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="var(--bg-secondary)" stroke-width="12"/>
+                    <circle cx="100" cy="100" r="85" fill="none" stroke="var(--color-neon)" stroke-width="12"
+                      stroke-dasharray="534" stroke-dashoffset="534" stroke-linecap="round"
+                      id="bmiGaugeCircle" style="transition: stroke-dashoffset 1s ease; transform: rotate(-90deg); transform-origin: center;"/>
+                  </svg>
+                  <div class="bmi-gauge-value">
+                    <span class="bmi-number" id="bmiValue">--</span>
+                    <span class="bmi-category" id="bmiCategory">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Result Cards -->
+              <div class="result-cards-grid">
+                <div class="result-item">
+                  <div class="result-item-value" id="proteinResult">--</div>
+                  <div class="result-item-label">Daily Protein (g)</div>
+                </div>
+                <div class="result-item">
+                  <div class="result-item-value" id="tdeeResult">--</div>
+                  <div class="result-item-label">TDEE (kcal)</div>
+                </div>
+                <div class="result-item">
+                  <div class="result-item-value" id="bmrResult">--</div>
+                  <div class="result-item-label">BMR (kcal)</div>
+                </div>
+                <div class="result-item">
+                  <div class="result-item-value" id="waterResult">--</div>
+                  <div class="result-item-label">Water (Liters)</div>
+                </div>
+              </div>
+
+              <button class="btn btn-secondary" id="saveResultsBtn" style="width: 100%;">
+                💾 Save Results to Profile
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════
+             SECTION: WORKOUT PLAN
+             ══════════════════════════ -->
+        <section class="section-panel" id="sectionWorkout">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">7-Day Workout Plan</h2>
+              <p class="section-description">Follow your personalized push/pull/legs split. Mark exercises as done to track your progress.</p>
+            </div>
+            <div>
+              <select class="form-select" id="workoutPlanSelect" style="width: auto;">
+                <option value="ppl">Push / Pull / Legs</option>
+                <option value="upperlower">Upper / Lower Split</option>
+                <option value="fullbody">Full Body</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Day Tabs -->
+          <div class="tabs" id="workoutTabs">
+            <button class="tab active" data-day="0">Mon</button>
+            <button class="tab" data-day="1">Tue</button>
+            <button class="tab" data-day="2">Wed</button>
+            <button class="tab" data-day="3">Thu</button>
+            <button class="tab" data-day="4">Fri</button>
+            <button class="tab" data-day="5">Sat</button>
+            <button class="tab" data-day="6">Sun</button>
+          </div>
+
+          <!-- Workout Day Content -->
+          <div id="workoutDayContent" style="margin-top: var(--space-6);">
+            <!-- Dynamically populated by workout-plan.js -->
+          </div>
+        </section>
+
+        <!-- ══════════════════════════
+             SECTION: DIET PLAN
+             ══════════════════════════ -->
+        <section class="section-panel" id="sectionDiet">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Diet Plan & Nutrition</h2>
+              <p class="section-description">Daily meal suggestions tailored to your fitness goal. Switch between plans to find what works best.</p>
+            </div>
+            <div>
+              <div class="tabs" id="dietGoalTabs">
+                <button class="tab active" data-goal="bulking">🏋️ Bulking</button>
+                <button class="tab" data-goal="cutting">🔥 Cutting</button>
+                <button class="tab" data-goal="maintenance">⚖️ Maintenance</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Macro Summary -->
+          <div class="diet-summary-bar" id="macroSummary">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Meal Cards -->
+          <div class="meal-grid" id="mealGrid">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Water Tracker -->
+          <div class="water-tracker" id="waterTracker">
+            <div>
+              <div style="font-size: var(--text-lg); margin-bottom: var(--space-2);">💧 Water Intake</div>
+              <div class="water-count">
+                <strong id="waterCount">0</strong> / 8 glasses
+              </div>
+            </div>
+            <div class="water-glasses" id="waterGlasses">
+              <!-- 8 glasses dynamically generated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════
+             SECTION: EXERCISE LIBRARY
+             ══════════════════════════ -->
+        <section class="section-panel" id="sectionExercises">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Exercise Library</h2>
+              <p class="section-description">Browse our collection of exercises with proper form guides and muscle group targeting.</p>
+            </div>
+            <div>
+              <input class="form-input" type="text" id="exerciseSearch" placeholder="🔍  Search exercises..." style="width: 250px;">
+            </div>
+          </div>
+
+          <!-- Filter Buttons -->
+          <div class="filter-bar" id="exerciseFilters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="chest">Chest</button>
+            <button class="filter-btn" data-filter="back">Back</button>
+            <button class="filter-btn" data-filter="shoulders">Shoulders</button>
+            <button class="filter-btn" data-filter="arms">Arms</button>
+            <button class="filter-btn" data-filter="legs">Legs</button>
+            <button class="filter-btn" data-filter="core">Core</button>
+            <button class="filter-btn" data-filter="cardio">Cardio</button>
+          </div>
+
+          <!-- Exercise Grid -->
+          <div class="exercise-grid" id="exerciseGrid">
+            <!-- Dynamically populated by exercise-library.js -->
+          </div>
+        </section>
+
+        <!-- ══════════════════════════
+             SECTION: PROGRESS TRACKER
+             ══════════════════════════ -->
+        <section class="section-panel" id="sectionProgress">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Progress Tracker</h2>
+              <p class="section-description">Visualize your fitness journey. Log your weight and track workout consistency over time.</p>
+            </div>
+          </div>
+
+          <!-- Log Weight -->
+          <div class="card" style="margin-bottom: var(--space-6);">
+            <div class="card-title" style="margin-bottom: var(--space-4);">Log Today's Weight</div>
+            <form class="log-weight-form" id="logWeightForm">
+              <div class="form-group">
+                <label class="form-label" for="logWeight">Weight (kg)</label>
+                <input class="form-input" type="number" id="logWeight" placeholder="70.5" step="0.1" min="20" max="300" required>
+              </div>
+              <button class="btn btn-primary" type="submit">Log Weight</button>
+            </form>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="dashboard-grid-equal">
+            <div class="chart-container">
+              <div class="card-title" style="margin-bottom: var(--space-4);">Weight Trend</div>
+              <canvas id="weightChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <div class="card-title" style="margin-bottom: var(--space-4);">Weekly Workout Consistency</div>
+              <canvas id="workoutChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container" style="margin-top: var(--space-6);">
+            <div class="card-title" style="margin-bottom: var(--space-4);">BMI History</div>
+            <canvas id="bmiChart"></canvas>
+          </div>
+        </section>
+
+        <!-- ══════════════════════════
+             SECTION: PROFILE
+             ══════════════════════════ -->
+        <section class="section-panel" id="sectionProfile">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Profile & Settings</h2>
+              <p class="section-description">Manage your account settings and fitness preferences.</p>
+            </div>
+          </div>
+
+          <div class="profile-grid">
+            <div class="card profile-card">
+              <div class="profile-avatar" id="profileAvatar">A</div>
+              <div class="profile-name" id="profileName">Loading...</div>
+              <div class="profile-email" id="profileEmail">...</div>
+              <div class="divider"></div>
+              <div style="text-align: left;">
+                <div class="stat-label" style="margin-bottom: var(--space-2);">Fitness Goal</div>
+                <span class="badge badge-neon" id="profileGoal" style="font-size: var(--text-sm);">--</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title" style="margin-bottom: var(--space-4);">Update Profile</div>
+              <form id="profileForm">
+                <div class="form-group">
+                  <label class="form-label" for="profileNameInput">Display Name</label>
+                  <input class="form-input" type="text" id="profileNameInput" placeholder="Your name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="profileGoalSelect">Fitness Goal</label>
+                  <select class="form-select" id="profileGoalSelect">
+                    <option value="bulking">🏋️ Bulking</option>
+                    <option value="cutting">🔥 Cutting</option>
+                    <option value="maintenance">⚖️ Maintenance</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" type="submit" style="width: 100%;">Update Profile</button>
+              </form>
+
+              <div class="divider"></div>
+
+              <div class="card-title" style="margin-bottom: var(--space-4); color: var(--color-error);">Danger Zone</div>
+              <button class="btn btn-secondary" id="logoutBtnProfile" style="width: 100%; border-color: var(--color-error); color: var(--color-error);">
+                🚪 Sign Out
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- App Scripts (no server required) -->
+  <script src="js/config.js"></script>
+  <script src="js/dashboard-app.js"></script>
+
+</body>
+</html>
