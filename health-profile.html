@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ForgeFit — Complete your health profile to get personalized workout and nutrition plans.">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>ForgeFit — Health Profile Setup</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
+</head>
+<body>
+
+  <div class="hp-page" id="healthProfilePage">
+
+    <!-- Background decorative elements -->
+    <div class="hp-bg-shape hp-bg-shape-1"></div>
+    <div class="hp-bg-shape hp-bg-shape-2"></div>
+    <div class="hp-bg-shape hp-bg-shape-3"></div>
+
+    <!-- Header -->
+    <header class="hp-header">
+      <div class="hp-logo">
+        <div class="hp-logo-icon">F</div>
+        <div class="hp-logo-text">FORGE<span>FIT</span></div>
+      </div>
+      <div class="hp-greeting" id="hpGreeting">Welcome! Let's set up your profile</div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="hp-progress-container">
+      <div class="hp-progress-bar">
+        <div class="hp-progress-fill" id="hpProgressFill" style="width: 25%;"></div>
+      </div>
+      <div class="hp-steps-indicator">
+        <div class="hp-step-dot active" data-step="1">
+          <span class="hp-step-number">1</span>
+          <span class="hp-step-label">Body</span>
+        </div>
+        <div class="hp-step-dot" data-step="2">
+          <span class="hp-step-number">2</span>
+          <span class="hp-step-label">Health</span>
+        </div>
+        <div class="hp-step-dot" data-step="3">
+          <span class="hp-step-number">3</span>
+          <span class="hp-step-label">Routine</span>
+        </div>
+        <div class="hp-step-dot" data-step="4">
+          <span class="hp-step-number">4</span>
+          <span class="hp-step-label">Goals</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps Container -->
+    <div class="hp-steps-container" id="hpStepsContainer">
+
+      <!-- ═══ STEP 1: Body Measurements ═══ -->
+      <div class="hp-step active" id="hpStep1">
+        <div class="hp-step-card">
+          <div class="hp-step-header">
+            <div class="hp-step-icon">📏</div>
+            <h2 class="hp-step-title">Body Measurements</h2>
+            <p class="hp-step-desc">Tell us about your physical parameters so we can personalize your experience.</p>
+          </div>
+
+          <div class="hp-form-grid">
+            <div class="form-group">
+              <label class="form-label" for="hpAge">Age</label>
+              <input class="form-input" type="number" id="hpAge" placeholder="25" min="10" max="120" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpGender">Gender</label>
+              <select class="form-select" id="hpGender" required>
+                <option value="" disabled selected>Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpHeight">Height (cm)</label>
+              <input class="form-input" type="number" id="hpHeight" placeholder="175" min="100" max="250" step="0.1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpWeight">Weight (kg)</label>
+              <input class="form-input" type="number" id="hpWeight" placeholder="70" min="20" max="300" step="0.1" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpBodyFat">Body Fat % <span class="form-hint">(optional)</span></label>
+              <input class="form-input" type="number" id="hpBodyFat" placeholder="15" min="2" max="60" step="0.1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpBloodType">Blood Type</label>
+              <select class="form-select" id="hpBloodType">
+                <option value="" disabled selected>Select blood type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A−</option>
+                <option value="B+">B+</option>
+                <option value="B-">B−</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB−</option>
+                <option value="O+">O+</option>
+                <option value="O-">O−</option>
+                <option value="unknown">Don't know</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ STEP 2: Health & Medical ═══ -->
+      <div class="hp-step" id="hpStep2">
+        <div class="hp-step-card">
+          <div class="hp-step-header">
+            <div class="hp-step-icon">🩺</div>
+            <h2 class="hp-step-title">Health & Medical</h2>
+            <p class="hp-step-desc">Help us understand any health conditions so we can suggest safe workouts.</p>
+          </div>
+
+          <div class="hp-section-label">Current Health Issues</div>
+          <div class="hp-checkbox-grid" id="hpHealthIssues">
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="none" id="hpNoIssues">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">✨</span>
+                <span class="hp-checkbox-text">None / Healthy</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="diabetes">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">🩸</span>
+                <span class="hp-checkbox-text">Diabetes</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="hypertension">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">❤️</span>
+                <span class="hp-checkbox-text">Hypertension</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="asthma">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">🫁</span>
+                <span class="hp-checkbox-text">Asthma</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="joint_pain">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">🦴</span>
+                <span class="hp-checkbox-text">Joint Pain</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="back_pain">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">🔙</span>
+                <span class="hp-checkbox-text">Back Pain</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="heart_condition">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">💓</span>
+                <span class="hp-checkbox-text">Heart Condition</span>
+              </span>
+            </label>
+            <label class="hp-checkbox-card">
+              <input type="checkbox" value="thyroid">
+              <span class="hp-checkbox-visual">
+                <span class="hp-checkbox-icon">⚕️</span>
+                <span class="hp-checkbox-text">Thyroid</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="form-group" style="margin-top: var(--space-6);">
+            <label class="form-label" for="hpMedications">Current Medications</label>
+            <textarea class="form-input hp-textarea" id="hpMedications" placeholder="List any medications you are currently taking (e.g., Metformin 500mg, Thyronorm 50mcg)..." rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="hpAllergies">Allergies</label>
+            <textarea class="form-input hp-textarea" id="hpAllergies" placeholder="List any food or drug allergies (e.g., peanuts, penicillin)..." rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="hpInjuries">Injuries / Physical Limitations</label>
+            <textarea class="form-input hp-textarea" id="hpInjuries" placeholder="Any past or current injuries that may affect workouts (e.g., torn ACL, shoulder impingement)..." rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ STEP 3: Fitness Background ═══ -->
+      <div class="hp-step" id="hpStep3">
+        <div class="hp-step-card">
+          <div class="hp-step-header">
+            <div class="hp-step-icon">🏋️</div>
+            <h2 class="hp-step-title">Current Workout Routine</h2>
+            <p class="hp-step-desc">Tell us about your current fitness level and what exercises you follow.</p>
+          </div>
+
+          <div class="hp-form-grid">
+            <div class="form-group">
+              <label class="form-label" for="hpExperience">Experience Level</label>
+              <select class="form-select" id="hpExperience" required>
+                <option value="" disabled selected>Select level</option>
+                <option value="beginner">🌱 Beginner (0-6 months)</option>
+                <option value="intermediate">💪 Intermediate (6-24 months)</option>
+                <option value="advanced">🔥 Advanced (2+ years)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpFrequency">Workout Frequency</label>
+              <select class="form-select" id="hpFrequency" required>
+                <option value="" disabled selected>Days per week</option>
+                <option value="1-2">1-2 days/week</option>
+                <option value="3-4">3-4 days/week</option>
+                <option value="5-6">5-6 days/week</option>
+                <option value="7">7 days/week</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpWorkoutType">Preferred Workout Type</label>
+              <select class="form-select" id="hpWorkoutType" required>
+                <option value="" disabled selected>Select type</option>
+                <option value="gym">🏋️ Gym / Weight Training</option>
+                <option value="home">🏠 Home Workouts</option>
+                <option value="calisthenics">🤸 Calisthenics</option>
+                <option value="crossfit">⚡ CrossFit</option>
+                <option value="yoga">🧘 Yoga / Pilates</option>
+                <option value="mixed">🔄 Mixed / Combination</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpDuration">Session Duration</label>
+              <select class="form-select" id="hpDuration" required>
+                <option value="" disabled selected>Workout duration</option>
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="90">1.5 hours</option>
+                <option value="120">2+ hours</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dynamic Exercise Rows -->
+          <div class="hp-section-label" style="margin-top: var(--space-6);">
+            <span>Your Current Exercises</span>
+            <span class="form-hint">(exercises you regularly perform)</span>
+          </div>
+
+          <div class="hp-exercise-list" id="hpExerciseList">
+            <!-- Dynamic rows inserted here -->
+          </div>
+
+          <button type="button" class="btn btn-secondary btn-sm hp-add-exercise-btn" id="hpAddExercise">
+            ➕ Add Exercise
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ STEP 4: Goals & Summary ═══ -->
+      <div class="hp-step" id="hpStep4">
+        <div class="hp-step-card">
+          <div class="hp-step-header">
+            <div class="hp-step-icon">🎯</div>
+            <h2 class="hp-step-title">Goals & Summary</h2>
+            <p class="hp-step-desc">Set your fitness goals and review your profile before getting started.</p>
+          </div>
+
+          <div class="hp-form-grid">
+            <div class="form-group">
+              <label class="form-label" for="hpGoal">Primary Fitness Goal</label>
+              <select class="form-select" id="hpGoal" required>
+                <option value="" disabled selected>Select goal</option>
+                <option value="bulking">🏋️ Bulking — Build Muscle Mass</option>
+                <option value="cutting">🔥 Cutting — Lose Fat</option>
+                <option value="maintenance">⚖️ Maintenance — Stay Fit</option>
+                <option value="strength">💪 Strength — Get Stronger</option>
+                <option value="endurance">🏃 Endurance — Improve Stamina</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="hpTargetWeight">Target Weight (kg) <span class="form-hint">(optional)</span></label>
+              <input class="form-input" type="number" id="hpTargetWeight" placeholder="75" min="30" max="250" step="0.1">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="hpTimeline">Timeline</label>
+            <select class="form-select" id="hpTimeline">
+              <option value="" disabled selected>Select timeline</option>
+              <option value="1month">1 Month</option>
+              <option value="3months">3 Months</option>
+              <option value="6months">6 Months</option>
+              <option value="1year">1 Year</option>
+              <option value="ongoing">Ongoing / No Rush</option>
+            </select>
+          </div>
+
+          <!-- Profile Summary -->
+          <div class="hp-summary" id="hpSummary">
+            <div class="hp-section-label">📋 Profile Summary</div>
+            <div class="hp-summary-grid" id="hpSummaryContent">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="hp-nav-buttons">
+      <button class="btn btn-ghost btn-lg hp-btn-back" id="hpBackBtn" style="visibility: hidden;">
+        ← Back
+      </button>
+      <button class="btn btn-primary btn-lg hp-btn-next" id="hpNextBtn">
+        Next →
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+
+  <!-- App Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/health-profile.js"></script>
+
+</body>
+</html>

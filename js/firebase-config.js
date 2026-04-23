@@ -1,11 +1,11 @@
 // ============================================
-// FIREBASE CONFIGURATION — ES Module (CDN)
+// FIREBASE CONFIGURATION — Compat SDK (Script Tags)
 // ============================================
 // INSTRUCTIONS:
 // 1. Go to https://console.firebase.google.com
 // 2. Create a project (or use existing)
 // 3. Go to Project Settings → General → Your apps → Add Web App
-// 4. Copy the firebaseConfig object and paste below
+// 4. Copy the firebaseConfig values and paste below
 // 5. Enable Email/Password in Authentication → Sign-in method
 // 6. Create a Firestore Database in test mode
 //
@@ -13,34 +13,32 @@
 // (uses localStorage instead of Firebase).
 // ============================================
 
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+// ── Your Firebase Config ──
+// Replace the placeholder values below with your actual Firebase project config.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDGQ2re8zXjxn1fhGiCoTK7k1_UNp_NS_M",
+  authDomain: "forgefit-f00ca.firebaseapp.com",
+  projectId: "forgefit-f00ca",
+  storageBucket: "forgefit-f00ca.firebasestorage.app",
+  messagingSenderId: "519942036922",
+  appId: "1:519942036922:web:e1aaa3fae4f701818e1183",
+  measurementId: "G-C5138BBTFJ"
 };
 
 // ── Detect if Firebase is configured ──
-const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
+const IS_FIREBASE_CONFIGURED = FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY" &&
+  FIREBASE_CONFIG.projectId !== "YOUR_PROJECT_ID";
 
-let app = null;
-let auth = null;
-let db = null;
-
-if (isFirebaseConfigured) {
-  // Real Firebase
-  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js');
-  const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js');
-  const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js');
-
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  console.log('🔥 Firebase initialized (Live Mode)');
+// ── Initialize Firebase (only if configured) ──
+if (IS_FIREBASE_CONFIGURED && typeof firebase !== 'undefined') {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    console.log('🔥 Firebase initialized (Live Mode) — Project:', FIREBASE_CONFIG.projectId);
+  } catch (e) {
+    if (e.code !== 'app/duplicate-app') {
+      console.error('Firebase init error:', e);
+    }
+  }
 } else {
-  console.log('⚡ Running in DEMO MODE (localStorage) — Add Firebase config to go live');
+  console.log('⚡ Running in DEMO MODE (localStorage) — Add Firebase config in firebase-config.js to go live');
 }
-
-export { auth, db, isFirebaseConfigured };

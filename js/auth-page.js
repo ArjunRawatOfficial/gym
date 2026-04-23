@@ -9,7 +9,8 @@
   // ── Redirect if already logged in ──
   const session = ForgeFit.getSession();
   if (session) {
-    window.location.href = 'dashboard.html';
+    // Redirect based on health profile completion
+    window.location.href = ForgeFit.isHealthProfileComplete() ? 'dashboard.html' : 'health-profile.html';
     return;
   }
 
@@ -61,7 +62,7 @@
   // LOGIN
   // ══════════════════════════════════════
   if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const email = document.getElementById('loginEmail').value.trim();
@@ -80,9 +81,11 @@
       spinner.classList.remove('hidden');
 
       try {
-        ForgeFit.login(email, password);
+        await ForgeFit.login(email, password);
+        await ForgeFit.loadFromFirestore(); // <--- Fetch data from Firebase!
         ForgeFit.showToast('Welcome back! Redirecting...', 'success');
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 600);
+        const dest = ForgeFit.isHealthProfileComplete() ? 'dashboard.html' : 'health-profile.html';
+        setTimeout(() => { window.location.href = dest; }, 600);
       } catch (error) {
         const messages = {
           'auth/user-not-found': 'No account found with this email',
@@ -101,7 +104,7 @@
   // SIGNUP
   // ══════════════════════════════════════
   if (signupForm) {
-    signupForm.addEventListener('submit', (e) => {
+    signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const name = document.getElementById('signupName').value.trim();
@@ -131,9 +134,9 @@
       spinner.classList.remove('hidden');
 
       try {
-        ForgeFit.signup(name, email, password, goal);
+        await ForgeFit.signup(name, email, password, goal);
         ForgeFit.showToast('Account created! Redirecting...', 'success');
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 600);
+        setTimeout(() => { window.location.href = 'health-profile.html'; }, 600);
       } catch (error) {
         const messages = {
           'auth/email-already-in-use': 'An account with this email already exists',

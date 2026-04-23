@@ -13,6 +13,12 @@
     return;
   }
 
+  // ── Health Profile Gate ──
+  if (!ForgeFit.isHealthProfileComplete()) {
+    window.location.href = 'health-profile.html';
+    return;
+  }
+
   // ══════════════════════════════════════════════
   // 1. USER PROFILE SETUP
   // ══════════════════════════════════════════════
@@ -141,7 +147,86 @@
   }
 
   // Demo mode toast
-  ForgeFit.showToast('⚡ Running in Demo Mode — data saved locally', 'info');
+  if (!ForgeFit.isLive) {
+    ForgeFit.showToast('⚡ Running in Demo Mode — data saved locally', 'info');
+  } else {
+    ForgeFit.showToast('🔥 Connected to Firebase Database', 'success');
+  }
+
+  // ══════════════════════════════════════════════
+  // HEALTH PROFILE SUMMARY ON DASHBOARD
+  // ══════════════════════════════════════════════
+
+  function renderHealthProfileSummary() {
+    const container = document.getElementById('healthProfileSummary');
+    if (!container) return;
+
+    const profile = ForgeFit.getData('healthProfile', 'null');
+    if (!profile) {
+      container.style.display = 'none';
+      return;
+    }
+
+    const b = profile.body || {};
+    const h = profile.health || {};
+    const f = profile.fitness || {};
+    const g = profile.goals || {};
+
+    const goalLabels = {
+      bulking: '🏋️ Bulking', cutting: '🔥 Cutting', maintenance: '⚖️ Maintenance',
+      strength: '💪 Strength', endurance: '🏃 Endurance'
+    };
+    const expLabels = {
+      beginner: '🌱 Beginner', intermediate: '💪 Intermediate', advanced: '🔥 Advanced'
+    };
+
+    // Body stats row
+    let html = `<div class="hp-dashboard-summary">`;
+    html += `<div class="hp-dash-stat"><span class="hp-dash-stat-label">Height</span><span class="hp-dash-stat-value">${b.height || '--'} cm</span></div>`;
+    html += `<div class="hp-dash-stat"><span class="hp-dash-stat-label">Weight</span><span class="hp-dash-stat-value">${b.weight || '--'} kg</span></div>`;
+    html += `<div class="hp-dash-stat"><span class="hp-dash-stat-label">Age</span><span class="hp-dash-stat-value">${b.age || '--'}</span></div>`;
+    html += `<div class="hp-dash-stat"><span class="hp-dash-stat-label">Body Fat</span><span class="hp-dash-stat-value">${b.bodyFat ? b.bodyFat + '%' : '--'}</span></div>`;
+    html += `<div class="hp-dash-stat"><span class="hp-dash-stat-label">Goal</span><span class="hp-dash-stat-value">${goalLabels[g.primary] || g.primary || '--'}</span></div>`;
+    html += `<div class="hp-dash-stat"><span class="hp-dash-stat-label">Level</span><span class="hp-dash-stat-value">${expLabels[f.experience] || f.experience || '--'}</span></div>`;
+    html += `</div>`;
+
+    // Health conditions
+    if (h.conditions && h.conditions.length && !h.conditions.includes('none')) {
+      html += `<div style="margin-bottom: var(--space-3);"><span style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px;">Health Conditions</span>`;
+      html += `<div class="hp-dash-conditions">`;
+      const conditionNames = {
+        diabetes: 'Diabetes', hypertension: 'Hypertension', asthma: 'Asthma',
+        joint_pain: 'Joint Pain', back_pain: 'Back Pain', heart_condition: 'Heart Condition', thyroid: 'Thyroid'
+      };
+      h.conditions.forEach(c => {
+        html += `<span class="hp-dash-condition-tag">${conditionNames[c] || c}</span>`;
+      });
+      html += `</div></div>`;
+    }
+
+    // Medications
+    if (h.medications) {
+      html += `<div style="margin-bottom: var(--space-3); font-size: var(--text-sm);"><span style="color: var(--text-tertiary);">💊 Medications: </span><span style="color: var(--text-secondary);">${h.medications}</span></div>`;
+    }
+
+    // Current exercises
+    if (f.exercises && f.exercises.length) {
+      html += `<div style="font-size: var(--text-xs); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px;">Current Exercises</div>`;
+      html += `<div class="hp-dash-exercise-list">`;
+      f.exercises.slice(0, 5).forEach(ex => {
+        html += `<div class="hp-dash-exercise-item"><span>${ex.name}</span><span>${ex.sets} sets × ${ex.reps}${ex.weight ? ' @ ' + ex.weight + 'kg' : ''}</span></div>`;
+      });
+      if (f.exercises.length > 5) {
+        html += `<div style="font-size: var(--text-xs); color: var(--text-tertiary); padding: var(--space-1) var(--space-3);">+${f.exercises.length - 5} more exercises</div>`;
+      }
+      html += `</div>`;
+    }
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+  }
+
+  renderHealthProfileSummary();
 
   // ══════════════════════════════════════════════
   // 3. BMI & PROTEIN CALCULATOR
@@ -303,6 +388,27 @@
   let completedEx = ForgeFit.getData('workout', '{}');
   if (typeof completedEx !== 'object' || Array.isArray(completedEx)) completedEx = {};
 
+  // Custom workout overrides (user edits)
+  let customPlans = ForgeFit.getData('customPlans', '{}');
+  if (typeof customPlans !== 'object' || Array.isArray(customPlans)) customPlans = {};
+
+  function getEffectiveDays() {
+    const base = PLANS[curPlan];
+    const key = curPlan;
+    if (!customPlans[key]) return base;
+    return base.map((day, di) => {
+      const cDay = customPlans[key]?.[di];
+      if (!cDay) return day;
+      return { ...day, exercises: cDay.exercises || day.exercises };
+    });
+  }
+
+  function saveCustomPlan(dayIdx, exercises) {
+    if (!customPlans[curPlan]) customPlans[curPlan] = {};
+    customPlans[curPlan][dayIdx] = { exercises };
+    ForgeFit.saveData('customPlans', customPlans);
+  }
+
   function getTodayIdx() { const d = new Date().getDay(); return d === 0 ? 6 : d - 1; }
   function getDateStr(idx) {
     const now = new Date(); const diff = idx - getTodayIdx();
@@ -311,32 +417,34 @@
   }
 
   function renderWorkoutDay(idx) {
-    const days = PLANS[curPlan];
+    const days = getEffectiveDays();
     const day = days[idx];
     const container = document.getElementById('workoutDayContent');
     if (!container || !day) return;
     const ds = getDateStr(idx);
+    const isCustom = !!customPlans[curPlan]?.[idx];
 
     container.innerHTML = `
       <div class="workout-day-card animate-fade-up">
         <div class="workout-day-header">
-          <div><div class="workout-day-name">${day.day}</div><div class="workout-focus">${day.focus}</div></div>
+          <div><div class="workout-day-name">${day.day}${isCustom ? '<span class="exercise-custom-badge">customized</span>' : ''}</div><div class="workout-focus">${day.focus}</div></div>
           <span class="badge badge-neon" id="dayProgressBadge">0/${day.exercises.length}</span>
         </div>
         <div class="exercise-list">
-          ${day.exercises.map(ex => {
+          ${day.exercises.map((ex, ei) => {
             const key = `${ds}_${ex.id}`;
             const done = completedEx[key] || false;
             return `<div class="exercise-item ${done ? 'completed' : ''}" data-key="${key}">
               <button class="exercise-item-check ${done ? 'checked' : ''}" data-key="${key}">${done ? '✓' : ''}</button>
               <div class="exercise-info"><div class="exercise-name">${ex.name}</div><div class="exercise-detail">${ex.sets} sets × ${ex.reps} · Rest: ${ex.rest}</div></div>
               <span class="exercise-muscle-tag">${ex.muscle}</span>
+              <button class="exercise-edit-btn" data-day="${idx}" data-ex="${ei}" title="Edit exercise">✏️</button>
             </div>`;
           }).join('')}
+          <button class="workout-add-exercise-btn" data-day="${idx}">➕ Add Exercise</button>
         </div>
       </div>`;
 
-    // Event delegation for checkboxes
     container.querySelectorAll('.exercise-item-check').forEach(btn => {
       btn.addEventListener('click', () => {
         const k = btn.dataset.key;
@@ -349,6 +457,12 @@
         updateWeeklyStat();
       });
     });
+
+    container.querySelectorAll('.exercise-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(parseInt(btn.dataset.day), parseInt(btn.dataset.ex)); });
+    });
+
+    container.querySelector('.workout-add-exercise-btn')?.addEventListener('click', () => { openEditModal(idx, -1); });
 
     updateDayBadge(ds, day.exercises.length);
   }
@@ -393,7 +507,7 @@
 
   // Today's preview
   function renderTodayPreview() {
-    const days = PLANS[curPlan];
+    const days = getEffectiveDays();
     const day = days[getTodayIdx()];
     const nameEl = document.getElementById('todayDayName');
     const focusEl = document.getElementById('todayFocus');
@@ -407,6 +521,111 @@
       `).join('') + (day.exercises.length > 4 ? `<div style="padding:4px 16px;color:var(--text-tertiary);font-size:var(--text-sm);">+${day.exercises.length - 4} more</div>` : '');
     }
   }
+
+  // ── Edit Modal Logic ──
+  const editOverlay = document.getElementById('exerciseEditOverlay');
+  const editForm = document.getElementById('exerciseEditForm');
+
+  function openEditModal(dayIdx, exIdx) {
+    const days = getEffectiveDays();
+    const day = days[dayIdx];
+    if (!day) return;
+
+    document.getElementById('editExDayIdx').value = dayIdx;
+    document.getElementById('editExIdx').value = exIdx;
+
+    const titleEl = document.getElementById('editModalTitle');
+    const deleteBtn = document.getElementById('editExDelete');
+
+    if (exIdx === -1) {
+      // Adding new exercise
+      titleEl.textContent = '➕ Add New Exercise';
+      document.getElementById('editExName').value = '';
+      document.getElementById('editExSets').value = '3';
+      document.getElementById('editExReps').value = '10-12';
+      document.getElementById('editExRest').value = '60s';
+      document.getElementById('editExMuscle').value = '';
+      if (deleteBtn) deleteBtn.style.display = 'none';
+    } else {
+      const ex = day.exercises[exIdx];
+      if (!ex) return;
+      titleEl.textContent = '✏️ Edit Exercise';
+      document.getElementById('editExName').value = ex.name;
+      document.getElementById('editExSets').value = ex.sets;
+      document.getElementById('editExReps').value = ex.reps;
+      document.getElementById('editExRest').value = ex.rest || '';
+      document.getElementById('editExMuscle').value = ex.muscle || '';
+      if (deleteBtn) deleteBtn.style.display = '';
+    }
+
+    editOverlay?.classList.add('active');
+    setTimeout(() => document.getElementById('editExName')?.focus(), 100);
+  }
+
+  function closeEditModal() {
+    editOverlay?.classList.remove('active');
+  }
+
+  document.getElementById('editModalClose')?.addEventListener('click', closeEditModal);
+  document.getElementById('editExCancel')?.addEventListener('click', closeEditModal);
+  editOverlay?.addEventListener('click', (e) => { if (e.target === editOverlay) closeEditModal(); });
+
+  if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const dayIdx = parseInt(document.getElementById('editExDayIdx').value);
+      const exIdx = parseInt(document.getElementById('editExIdx').value);
+      const days = getEffectiveDays();
+      const day = days[dayIdx];
+      if (!day) return;
+
+      const exercises = JSON.parse(JSON.stringify(day.exercises));
+      const updated = {
+        id: exIdx >= 0 ? exercises[exIdx].id : 'custom_' + Date.now(),
+        name: document.getElementById('editExName').value.trim(),
+        sets: parseInt(document.getElementById('editExSets').value) || 3,
+        reps: document.getElementById('editExReps').value.trim() || '10',
+        rest: document.getElementById('editExRest').value.trim() || '60s',
+        muscle: document.getElementById('editExMuscle').value.trim() || 'General'
+      };
+
+      if (!updated.name) { ForgeFit.showToast('Exercise name is required', 'warning'); return; }
+
+      if (exIdx === -1) { exercises.push(updated); }
+      else { exercises[exIdx] = updated; }
+
+      saveCustomPlan(dayIdx, exercises);
+      closeEditModal();
+      renderWorkoutDay(curDayIdx);
+      renderTodayPreview();
+      ForgeFit.showToast(exIdx === -1 ? 'Exercise added!' : 'Exercise updated!', 'success');
+    });
+  }
+
+  // Delete exercise
+  document.getElementById('editExDelete')?.addEventListener('click', () => {
+    const dayIdx = parseInt(document.getElementById('editExDayIdx').value);
+    const exIdx = parseInt(document.getElementById('editExIdx').value);
+    if (exIdx < 0) return;
+    const days = getEffectiveDays();
+    const exercises = JSON.parse(JSON.stringify(days[dayIdx].exercises));
+    exercises.splice(exIdx, 1);
+    saveCustomPlan(dayIdx, exercises);
+    closeEditModal();
+    renderWorkoutDay(curDayIdx);
+    renderTodayPreview();
+    ForgeFit.showToast('Exercise removed', 'info');
+  });
+
+  // Reset all customizations
+  document.getElementById('resetWorkoutPlan')?.addEventListener('click', () => {
+    if (!customPlans[curPlan]) { ForgeFit.showToast('No customizations to reset', 'info'); return; }
+    delete customPlans[curPlan];
+    ForgeFit.saveData('customPlans', customPlans);
+    renderWorkoutDay(curDayIdx);
+    renderTodayPreview();
+    ForgeFit.showToast('Workout plan reset to default!', 'success');
+  });
 
   renderWorkoutDay(curDayIdx);
   renderTodayPreview();
@@ -704,5 +923,56 @@
   }
 
   renderCharts();
+
+  // ══════════════════════════════════════════════
+  // SCROLL-REVEAL ANIMATIONS
+  // ══════════════════════════════════════════════
+
+  function initScrollReveal() {
+    // Add reveal class to cards, stat-cards, and sections
+    document.querySelectorAll('.card, .stat-card, .workout-day-card, .exercise-card, .meal-card').forEach((el, i) => {
+      if (!el.classList.contains('reveal') && !el.classList.contains('revealed')) {
+        el.classList.add('reveal');
+        el.style.transitionDelay = (i % 6) * 0.05 + 's';
+      }
+    });
+
+    // Add stagger to grid containers
+    document.querySelectorAll('.stats-grid, .exercise-grid, .meal-grid, .dashboard-grid, .hp-dashboard-summary').forEach(grid => {
+      grid.classList.add('reveal-stagger');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          // Also reveal children if stagger container
+          if (entry.target.classList.contains('reveal-stagger')) {
+            entry.target.querySelectorAll('.reveal').forEach(child => {
+              child.classList.add('revealed');
+            });
+          }
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-stagger').forEach(el => {
+      observer.observe(el);
+    });
+  }
+
+  // Run after a short delay to let initial content render
+  setTimeout(initScrollReveal, 200);
+
+  // Re-run on section change
+  const origNavItems = document.querySelectorAll('.nav-item[data-section]');
+  origNavItems.forEach(item => {
+    item.addEventListener('click', () => {
+      setTimeout(initScrollReveal, 100);
+    });
+  });
 
 })();

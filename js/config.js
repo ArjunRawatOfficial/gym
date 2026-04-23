@@ -1,21 +1,31 @@
 // ============================================
 // FORGEFIT — Global Config & Utilities
-// Works without a server (no ES modules needed)
+// Dual-mode: Firestore (live) + localStorage (demo)
 // ============================================
 
 const ForgeFit = {
-  // ── Set to true and fill in credentials when you have Firebase ──
-  useFirebase: false,
-  firebaseConfig: {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+
+  // ══════════════════════════════════════════════
+  // DETECTION
+  // ══════════════════════════════════════════════
+
+  get isLive() {
+    return typeof IS_FIREBASE_CONFIGURED !== 'undefined' && IS_FIREBASE_CONFIGURED &&
+           typeof firebase !== 'undefined' && firebase.apps?.length > 0;
   },
 
-  // ── Demo Auth (localStorage) ──
+  get fireAuth() {
+    return this.isLive ? firebase.auth() : null;
+  },
+
+  get fireDB() {
+    return this.isLive ? firebase.firestore() : null;
+  },
+
+  // ══════════════════════════════════════════════
+  // SESSION (localStorage cache — always used for quick access)
+  // ══════════════════════════════════════════════
+
   USERS_KEY: 'forgefit_users',
   SESSION_KEY: 'forgefit_session',
 
@@ -35,40 +45,182 @@ const ForgeFit = {
     localStorage.removeItem(this.SESSION_KEY);
   },
 
-  // ── Demo Signup ──
-  signup(name, email, password, fitnessGoal) {
-    const users = this.getDemoUsers();
-    if (users[email]) throw { code: 'auth/email-already-in-use' };
-    const user = {
-      uid: 'demo_' + Date.now(),
-      displayName: name,
-      email, password, fitnessGoal,
-      createdAt: new Date().toISOString(),
-      profileComplete: true
-    };
-    users[email] = user;
-    this.saveDemoUsers(users);
-    this.setSession(user);
-    return user;
+  // ══════════════════════════════════════════════
+  // AUTH — Signup / Login / Logout
+  // ══════════════════════════════════════════════
+
+  async signup(name, email, password, fitnessGoal) {
+    if (this.isLive) {
+      // ── Firebase Auth ──
+      const cred = await this.fireAuth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+
+      const userData = {
+        uid: cred.user.uid,
+        displayName: name,
+        email: email,
+        fitnessGoal: fitnessGoal,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        profileComplete: true,
+        healthProfileComplete: false
+      };
+
+      // Save to Firestore
+      await this.fireDB.collection('users').doc(cred.user.uid).set(userData);
+
+      // Cache locally (use ISO string for local timestamp)
+      const localData = { ...userData, createdAt: new Date().toISOString() };
+      this.setSession(localData);
+      return localData;
+
+    } else {
+      // ── Demo Mode (localStorage) ──
+      const users = this.getDemoUsers();
+      if (users[email]) throw { code: 'auth/email-already-in-use' };
+      const user = {
+        uid: 'demo_' + Date.now(),
+        displayName: name,
+        email, password, fitnessGoal,
+        createdAt: new Date().toISOString(),
+        profileComplete: true,
+        healthProfileComplete: false
+      };
+      users[email] = user;
+      this.saveDemoUsers(users);
+      this.setSession(user);
+      return user;
+    }
   },
 
-  // ── Demo Login ──
-  login(email, password) {
-    const users = this.getDemoUsers();
-    const user = users[email];
-    if (!user) throw { code: 'auth/user-not-found' };
-    if (user.password !== password) throw { code: 'auth/wrong-password' };
-    this.setSession(user);
-    return user;
+  async login(email, password) {
+    if (this.isLive) {
+      // ── Firebase Auth ──
+      const cred = await this.fireAuth.signInWithEmailAndPassword(email, password);
+      
+      // Load user data from Firestore
+      const doc = await this.fireDB.collection('users').doc(cred.user.uid).get();
+      let userData;
+
+      if (doc.exists) {
+        userData = doc.data();
+        userData.uid = cred.user.uid;
+        // Convert Firestore timestamps to ISO strings for local use
+        if (userData.createdAt && userData.createdAt.toDate) {
+          userData.createdAt = userData.createdAt.toDate().toISOString();
+        }
+        if (userData.healthProfile?.completedAt && userData.healthProfile.completedAt.toDate) {
+          userData.healthProfile.completedAt = userData.healthProfile.completedAt.toDate().toISOString();
+        }
+      } else {
+        // User exists in Auth but not Firestore — create doc
+        userData = {
+          uid: cred.user.uid,
+          displayName: cred.user.displayName || email.split('@')[0],
+          email: email,
+          createdAt: new Date().toISOString(),
+          profileComplete: true,
+          healthProfileComplete: false
+        };
+        await this.fireDB.collection('users').doc(cred.user.uid).set(userData);
+      }
+
+      this.setSession(userData);
+      return userData;
+
+    } else {
+      // ── Demo Mode ──
+      const users = this.getDemoUsers();
+      const user = users[email];
+      if (!user) throw { code: 'auth/user-not-found' };
+      if (user.password !== password) throw { code: 'auth/wrong-password' };
+      this.setSession(user);
+      return user;
+    }
   },
 
-  // ── Demo Logout ──
-  logout() {
+  async logout() {
+    if (this.isLive) {
+      try { await this.fireAuth.signOut(); } catch (e) { console.error('Logout error:', e); }
+    }
     this.clearSession();
     window.location.href = 'index.html';
   },
 
-  // ── Toast Notifications ──
+  // ══════════════════════════════════════════════
+  // DATA — Read / Write (dual-mode)
+  // ══════════════════════════════════════════════
+
+  getData(key, fallback = '[]') {
+    const uid = this.getSession()?.uid || 'demo';
+    return JSON.parse(localStorage.getItem(`forgefit_${key}_${uid}`) || fallback);
+  },
+
+  saveData(key, value) {
+    const uid = this.getSession()?.uid || 'demo';
+    // Always save locally for instant access
+    localStorage.setItem(`forgefit_${key}_${uid}`, JSON.stringify(value));
+
+    // Also sync to Firestore if live
+    if (this.isLive && uid !== 'demo' && !uid.startsWith('demo_')) {
+      this._syncToFirestore(uid, key, value);
+    }
+  },
+
+  // Internal: Write a field to Firestore user doc
+  _syncToFirestore(uid, key, value) {
+    try {
+      this.fireDB.collection('users').doc(uid).set(
+        { [key]: value, lastUpdated: firebase.firestore.FieldValue.serverTimestamp() },
+        { merge: true }
+      ).catch(err => console.error('Firestore sync error:', err));
+    } catch (e) {
+      console.error('Firestore sync error:', e);
+    }
+  },
+
+  // Load all user data from Firestore into localStorage cache
+  async loadFromFirestore() {
+    if (!this.isLive) return;
+    const session = this.getSession();
+    if (!session?.uid || session.uid.startsWith('demo_')) return;
+
+    try {
+      const doc = await this.fireDB.collection('users').doc(session.uid).get();
+      if (!doc.exists) return;
+
+      const data = doc.data();
+      const uid = session.uid;
+
+      // Map Firestore fields to localStorage keys
+      const fieldMappings = [
+        'healthProfile', 'workoutProgress', 'customPlans',
+        'calcResults', 'waterLog', 'weightLogs', 'workout', 'calc'
+      ];
+
+      fieldMappings.forEach(field => {
+        if (data[field] !== undefined) {
+          localStorage.setItem(`forgefit_${field}_${uid}`, JSON.stringify(data[field]));
+        }
+      });
+
+      // Update session with latest Firestore data
+      if (data.healthProfileComplete !== undefined) {
+        session.healthProfileComplete = data.healthProfileComplete;
+      }
+      if (data.fitnessGoal) session.fitnessGoal = data.fitnessGoal;
+      if (data.displayName) session.displayName = data.displayName;
+      this.setSession(session);
+
+      console.log('📥 User data loaded from Firestore');
+    } catch (e) {
+      console.error('Failed to load Firestore data:', e);
+    }
+  },
+
+  // ══════════════════════════════════════════════
+  // TOAST NOTIFICATIONS
+  // ══════════════════════════════════════════════
+
   showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
@@ -84,13 +236,39 @@ const ForgeFit = {
     setTimeout(() => toast.remove(), 4000);
   },
 
-  // ── localStorage data helpers ──
-  getData(key, fallback = '[]') {
-    const uid = this.getSession()?.uid || 'demo';
-    return JSON.parse(localStorage.getItem(`forgefit_${key}_${uid}`) || fallback);
+  // ══════════════════════════════════════════════
+  // HEALTH PROFILE HELPERS
+  // ══════════════════════════════════════════════
+
+  isHealthProfileComplete() {
+    const session = this.getSession();
+    return session?.healthProfileComplete === true;
   },
-  saveData(key, value) {
-    const uid = this.getSession()?.uid || 'demo';
-    localStorage.setItem(`forgefit_${key}_${uid}`, JSON.stringify(value));
+
+  async setHealthProfileComplete() {
+    const session = this.getSession();
+    if (session) {
+      session.healthProfileComplete = true;
+      this.setSession(session);
+
+      if (this.isLive && session.uid && !session.uid.startsWith('demo_')) {
+        // Update Firestore
+        try {
+          await this.fireDB.collection('users').doc(session.uid).set(
+            { healthProfileComplete: true },
+            { merge: true }
+          );
+        } catch (e) {
+          console.error('Firestore update error:', e);
+        }
+      } else {
+        // Demo mode: update users store
+        const users = this.getDemoUsers();
+        if (users[session.email]) {
+          users[session.email].healthProfileComplete = true;
+          this.saveDemoUsers(users);
+        }
+      }
+    }
   }
 };

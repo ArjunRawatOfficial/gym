@@ -149,6 +149,15 @@
             </div>
           </div>
 
+          <!-- Health Profile Summary -->
+          <div class="card animate-fade-up stagger-2" id="healthProfileSummary" style="margin-bottom: var(--space-6); display: none;">
+            <div class="card-header">
+              <div class="card-title">📋 Your Health Profile</div>
+              <button class="btn btn-ghost btn-sm" onclick="document.querySelector('[data-section=profile]').click()">Edit →</button>
+            </div>
+            <!-- Dynamically populated by dashboard-app.js -->
+          </div>
+
           <!-- Dashboard Grid -->
           <div class="dashboard-grid">
             <!-- Today's Workout Preview -->
@@ -307,9 +316,10 @@
           <div class="section-header">
             <div>
               <h2 class="section-title">7-Day Workout Plan</h2>
-              <p class="section-description">Follow your personalized push/pull/legs split. Mark exercises as done to track your progress.</p>
+              <p class="section-description">Follow your personalized push/pull/legs split. Click ✏️ on any exercise to customize sets, reps, and more.</p>
             </div>
-            <div>
+            <div style="display: flex; gap: var(--space-3); align-items: center;">
+              <button class="btn btn-ghost btn-sm" id="resetWorkoutPlan" title="Reset all customizations">🔄 Reset</button>
               <select class="form-select" id="workoutPlanSelect" style="width: auto;">
                 <option value="ppl">Push / Pull / Legs</option>
                 <option value="upperlower">Upper / Lower Split</option>
@@ -331,7 +341,57 @@
 
           <!-- Workout Day Content -->
           <div id="workoutDayContent" style="margin-top: var(--space-6);">
-            <!-- Dynamically populated by workout-plan.js -->
+            <!-- Dynamically populated by dashboard-app.js -->
+          </div>
+
+          <!-- Exercise Edit Modal -->
+          <div class="exercise-edit-overlay" id="exerciseEditOverlay">
+            <div class="exercise-edit-modal" id="exerciseEditModal">
+              <div class="exercise-edit-header">
+                <h3 class="exercise-edit-title" id="editModalTitle">Edit Exercise</h3>
+                <button class="exercise-edit-close" id="editModalClose" aria-label="Close">✕</button>
+              </div>
+
+              <form id="exerciseEditForm">
+                <input type="hidden" id="editExDayIdx">
+                <input type="hidden" id="editExIdx">
+
+                <div class="form-group">
+                  <label class="form-label" for="editExName">Exercise Name</label>
+                  <input class="form-input" type="text" id="editExName" placeholder="e.g., Barbell Bench Press" required>
+                </div>
+
+                <div class="exercise-edit-row">
+                  <div class="form-group">
+                    <label class="form-label" for="editExSets">Sets</label>
+                    <input class="form-input" type="number" id="editExSets" min="1" max="20" placeholder="4" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="editExReps">Reps</label>
+                    <input class="form-input" type="text" id="editExReps" placeholder="8-10" required>
+                  </div>
+                </div>
+
+                <div class="exercise-edit-row">
+                  <div class="form-group">
+                    <label class="form-label" for="editExRest">Rest Time</label>
+                    <input class="form-input" type="text" id="editExRest" placeholder="90s">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="editExMuscle">Muscle Group</label>
+                    <input class="form-input" type="text" id="editExMuscle" placeholder="Chest">
+                  </div>
+                </div>
+
+                <div class="exercise-edit-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" id="editExDelete" style="color: var(--color-error);">🗑️ Remove</button>
+                  <div style="display: flex; gap: var(--space-3);">
+                    <button type="button" class="btn btn-secondary btn-sm" id="editExCancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">💾 Save</button>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
 
@@ -508,7 +568,13 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- App Scripts (no server required) -->
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+
+  <!-- App Scripts -->
+  <script src="js/firebase-config.js"></script>
   <script src="js/config.js"></script>
   <script src="js/dashboard-app.js"></script>
 
